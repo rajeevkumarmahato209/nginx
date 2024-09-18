@@ -1,0 +1,125 @@
+
+
+golang download
+----------------------
+curl -O https://dl.google.com/go/go1.21.0.linux-amd64.tar.gz
+
+tar xvf go1.18.3.linux-amd64.tar.gz
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+
+
+vi ~/.bashrc
+export GOPATH=$HOME/go
+export PATH=$PATH:$GOPATH/bin
+
+
+hlf 
+---------------------
+curl -sSL https://bit.ly/2ysbOFE | bash -s -- 2.4.4 1.5.3
+
+keep folder inside fabric-samples
+1. asset-transfer-basic     --- remove all folders/files except chaincode-go
+2. bin
+3. config
+4. test-network
+
+
+Operation (run below command inside test-network)
+------------------------------------------------------
+network up, create channel and join channel
+-------------------------------------------------
+./network.sh createChannel
+
+chaincode build, installed, approved and committed
+--------------------------------------------------
+./network.sh deployCC -ccn basic -ccp ../asset-transfer-basic/chaincode-go -ccl go
+
+
+interacting with chaincode
+------------------------------------
+export PATH=${PWD}/../bin:$PATH
+export FABRIC_CFG_PATH=$PWD/../config/
+
+for org1 - 
+---------------
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID=Org1MSP
+export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/org1.example.com/users/Admin@org1.example.com/msp
+export CORE_PEER_ADDRESS=localhost:7051
+
+chaincode invoke
+--------------------
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" -C mychannel -n basic --peerAddresses localhost:7051 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" --peerAddresses localhost:9051 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" -c '{"function":"InitLedger","Args":[]}'
+peer chaincode query -C mychannel -n basic -c '{"Args":["GetAllAssets"]}' | jq
+peer chaincode invoke -o localhost:7050 --ordererTLSHostnameOverride orderer.example.com --tls --cafile "${PWD}/organizations/ordererOrganizations/example.com/orderers/orderer.example.com/msp/tlscacerts/tlsca.example.com-cert.pem" -C mychannel -n basic --peerAddresses localhost:7051 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org1.example.com/peers/peer0.org1.example.com/tls/ca.crt" --peerAddresses localhost:9051 --tlsRootCertFiles "${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt" -c '{"function":"TransferAsset","Args":["asset6","Christopher"]}'
+
+
+
+for org2-
+-------------------
+export CORE_PEER_TLS_ENABLED=true
+export CORE_PEER_LOCALMSPID=Org2MSP
+export CORE_PEER_TLS_ROOTCERT_FILE=${PWD}/organizations/peerOrganizations/org2.example.com/peers/peer0.org2.example.com/tls/ca.crt
+export CORE_PEER_MSPCONFIGPATH=${PWD}/organizations/peerOrganizations/org2.example.com/users/Admin@org2.example.com/msp
+export CORE_PEER_ADDRESS=localhost:9051
+
+
+
+
+
+
+----------------------------------------------------------------------------------------------------------------------------------------------------
+network.sh  org1 - rajeev org2 - mahato
+setOrgEnv.sh org1 - rajeev org2 - kumar
+/organizations/ccp-generate.sh org1 - rajeev org2 - kumar 
+   and 
+   ORG=rajeev
+   P0PORT=7051
+   CAPORT=7054
+
+   ORG=kumar
+   P0PORT=9051
+   CAPORT=8054
+
+
+/organizations/ccp-template.yaml  org${ORG} - ${ORG}
+/organizations/ccp-template.json  org${ORG} - ${ORG}
+
+
+/organizations/cryptogen/crypto-config-1-.yaml ---> /organizations/cryptogen/crypto-config-rajeev-.yaml  org1 - rajeev
+/organizations/cryptogen/crypto-config-2-.yaml ---> /organizations/cryptogen/crypto-config-kumar-.yaml  org2 - kumar
+
+
+/configtx/configtx.yaml  org1 - rajeev org2 - kumar
+/compose/compose-test-net.yaml   org1 - rajeev org2 - kumar
+/compose/docker/docker-compose-test-net.yaml org1 - rajeev org2 - kumar
+
+
+
+/scripts/setAnchorPeer.sh org1 - rajeev org2 - kumar
+/scripts/envVar.sh org1 - rajeev org2 - kumar  
+in setGlobals function         $USING_ORG -eq 1 - $USING_ORG -eq "rajeev"
+         $USING_ORG -eq 2 - $USING_ORG -eq "kumar"
+
+in setGlobalsCLI function         $USING_ORG -eq 1 - $USING_ORG -eq "rajeev"
+         $USING_ORG -eq 2 - $USING_ORG -eq "kumar"
+
+
+
+/scripts/deployCCAAS.sh org1 - rajeev org2 - kumar
+/scripts/createChannel.sh org1 - rajeev org2 - kumar
+     joinChannel 1 joinChannel rajeev
+     joinChannel 2 joinChannel kumar
+     setAnchorPeer 1 setAnchorPeer rajeev
+     setAnchorPeer 2 setAnchorPeer kumar
+
+     createChannel() {
+	setGlobals 1 to setGlobals rajeev
+
+
+/scripts/ccutils.sh org${ORG} - ${ORG}
+
+
+when peers exited then try to run docker system prune

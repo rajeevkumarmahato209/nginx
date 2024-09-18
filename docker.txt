@@ -1,0 +1,175 @@
+Installation
+-------------------------------
+1. Docker
+-----------------------
+sudo apt-get update
+sudo apt-get install apt-transport-https ca-certificates curl software-properties-common
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+sudo add-apt-repository "deb [arch=amd64] https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable"
+sudo apt-get update
+sudo apt-get install docker-ce
+docker --version
+
+Manage Docker as a Non-root User: 
+sudo usermod -aG docker $USER
+sudo chown root:docker /var/run/docker.sock
+sudo chmod 777 /var/run/docker.sock
+
+
+install by script
+------------------------
+curl -fsSL https://get.docker.com -o get-docker.sh
+ sudo sh get-docker.sh
+
+
+Another way
+---------------------
+# Add Docker's official GPG key:
+sudo apt-get update
+sudo apt-get install ca-certificates curl
+sudo install -m 0755 -d /etc/apt/keyrings
+sudo curl -fsSL https://download.docker.com/linux/ubuntu/gpg -o /etc/apt/keyrings/docker.asc
+sudo chmod a+r /etc/apt/keyrings/docker.asc
+
+# Add the repository to Apt sources:
+echo \
+  "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.asc] https://download.docker.com/linux/ubuntu \
+  $(. /etc/os-release && echo "$VERSION_CODENAME") stable" | \
+  sudo tee /etc/apt/sources.list.d/docker.list > /dev/null
+sudo apt-get update
+
+sudo apt-get install docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin
+
+
+
+2.Docker-compose
+----------------------
+sudo curl -L "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+                                                        or
+sudo wget "https://github.com/docker/compose/releases/latest/download/docker-compose-$(uname -s)-$(uname -m)" -O /usr/local/bin/docker-compose
+
+sudo chmod +x /usr/local/bin/docker-compose
+docker-compose --version
+
+
+
+
+
+
+3. Remove Docker
+-------------------
+sudo apt-get purge docker-ce docker-ce-cli containerd.io docker-buildx-plugin docker-compose-plugin docker-ce-rootless-extras
+sudo rm -rf /var/lib/docker
+sudo rm -rf /var/lib/containerd
+
+
+
+
+
+
+
+
+1.install package inside image
+---------------------------------------
+For Debian-based images (e.g., Ubuntu):
+
+FROM ubuntu:latest
+RUN apt-get update && apt-get install -y <package-name>
+
+
+For Alpine-based images:
+
+FROM alpine:latest
+RUN apk add --no-cache <package-name>
+
+
+For Red Hat-based images (e.g., CentOS, Fedora):
+
+FROM centos:latest
+RUN yum install -y <package-name>
+
+2. Docker build command
+---------------------------------
+docker build -t <image-name>:<tag> . or -f dockerfile
+
+
+3. How to write Dockerfile
+------------------------------------
+# Use the official Node.js image as a base
+FROM node:14
+
+# Set the working directory
+WORKDIR /usr/src/app
+
+# Copy package.json and package-lock.json
+COPY package*.json ./
+
+# Install dependencies
+RUN npm install
+
+# Copy the rest of the application code
+COPY . .
+
+# Expose port 3000
+EXPOSE 3000
+
+# Define the command to run the application
+CMD ["node", "app.js"]
+
+
+
+4. How to write docker-compose file
+------------------------------------------
+version: '3.8'
+
+services:
+  web:
+    image: node:14
+    container_name: web
+    working_dir: /app
+    volumes:
+      - ./app:/app
+    ports:
+      - "3000:3000"
+    depends_on:
+      - db
+    command: ["node", "server.js"]
+    networks:
+      - my-network
+
+  db:
+    image: mongo:latest
+    container_name: mongo
+    volumes:
+      - mongodb_data:/data/db
+    ports:
+      - "27017:27017"
+    networks:
+      - my-network
+
+volumes:
+  mongodb_data:
+networks:
+  my-network:
+    driver: bridge
+
+docker compose command
+----------------------------------
+
+docker-compose up or -f docker-compose.yaml
+docker-compose up -f docker-compose.yaml -d
+docker-compose down -f docker-compose.yaml 
+docker-compose logs -f docker-compose.yaml
+
+
+
+
+
+
+
+
+error
+----------------
+docker-compose --- segementation error then reinstall it using below command
+sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
+sudo chmod +x /usr/local/bin/docker-compose

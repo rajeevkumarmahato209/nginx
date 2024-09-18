@@ -1,0 +1,20 @@
+before running docker-compose -f docker-compose-cli.yaml up   -d --- > docker-compose -f docker-compose-cli.yaml up   -d
+
+check docker and docker-compose installed or not
+check jq installed or not
+check golang installed or not
+
+
+export ORDERER_CA=/opt/gopath/fabric-samples/burakcan-network/crypto-config/ordererOrganizations/burakcan-network.com/orderers/orderer.burakcan-network.com/msp/cacerts/ca.burakcan-network.com-cert.pem
+export TLS_CA=/opt/gopath/fabric-samples/burakcan-network/crypto-config/ordererOrganizations/burakcan-network.com/orderers/orderer.burakcan-network.com/msp/tlscacerts/tlsca.burakcan-network.com-cert.pem
+
+peer channel create -o orderer.burakcan-network.com:7050 -c channeldemo -f /opt/gopath/fabric-samples/burakcan-network/channel-artifacts/channel.tx --tls --cafile $ORDERER_CA
+
+
+
+
+
+
+
+
+
