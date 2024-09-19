@@ -14,6 +14,26 @@ peer channel create -o orderer.burakcan-network.com:7050 -c channeldemo -f /opt/
 
 
 
+[
+    {
+        "name": "collectionOne",
+        "policy": "AND('Org1MSP.member', 'Org2MSP.member')",
+        "requiredPeerCount": 1,
+        "maxPeerCount": 2,
+        "blockToLive": 300,
+        "memberOnlyRead": true,
+        "memberOnlyWrite": true
+    },
+    {
+        "name": "collectionTwo",
+        "policy": "OR('Org1MSP.member', 'Org3MSP.member')",
+        "requiredPeerCount": 0,
+        "maxPeerCount": 2,
+        "blockToLive": 600,
+        "memberOnlyRead": false,
+        "memberOnlyWrite": false
+    }
+]
 
 
 
