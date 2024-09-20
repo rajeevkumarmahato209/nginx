@@ -1,0 +1,45 @@
+pipeline {
+    agent any 
+
+    stages {
+        stage('Checkout') {
+            steps {
+                // Checkout code from version control
+                git 'https://github.com/your-repo.git'
+            }
+        }
+        stage('Build') {
+            steps {
+                // Build the application
+                sh './build.sh' // Replace with your build command
+            }
+        }
+        stage('Test') {
+            steps {
+                // Run tests
+                sh './run_tests.sh' // Replace with your test command
+            }
+        }
+        stage('Deploy') {
+            steps {
+                // Deploy the application
+                sh './deploy.sh' // Replace with your deployment command
+            }
+        }
+    }
+    
+    post {
+        always {
+            // Actions to always perform after the pipeline finishes
+            echo 'Cleaning up...'
+        }
+        success {
+            // Actions to perform on successful completion
+            echo 'Pipeline succeeded!'
+        }
+        failure {
+            // Actions to perform on failure
+            echo 'Pipeline failed!'
+        }
+    }
+}
