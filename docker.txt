@@ -162,7 +162,23 @@ docker-compose down -f docker-compose.yaml
 docker-compose logs -f docker-compose.yaml
 
 
+nginx docker-compose
+--------------------------
+version: '3.8'
 
+services:
+  web:
+    image: nginx:latest
+    ports:
+      - "80:80"
+    volumes:
+      - ./html:/usr/share/nginx/html:ro
+    networks:
+      - nginx-network
+
+networks:
+  nginx-network:
+    driver: bridge
 
 
 
