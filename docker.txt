@@ -1,3 +1,16 @@
+Run Image directly from CLI
+-------------------------------------
+docker run -d --name <name>  -e USERNAME=<***> -e  PASSWORD=<***>  --network <****> 
+
+ Running Container
+--------------------------------
+Rename
+docker rename my-new-container my-existing-container
+
+Run Multiple Commands
+docker exec -it <container_id> sh -c "apt-get update && apt-get install -y curl && echo 'Installation complete'"
+
+
 Installation
 -------------------------------
 1. Docker
@@ -162,23 +175,38 @@ docker-compose down -f docker-compose.yaml
 docker-compose logs -f docker-compose.yaml
 
 
-nginx docker-compose
---------------------------
-version: '3.8'
 
+
+
+
+
+compose file for db
+-----------------------
+version: ’2’
 services:
-  web:
-    image: nginx:latest
-    ports:
-      - "80:80"
-    volumes:
-      - ./html:/usr/share/nginx/html:ro
-    networks:
-      - nginx-network
+db:
+image: mysql:5.7
+volumes:db_data:/var/lib/mysql
+restart: always
+environment:
+MYSQL_ROOT_PASSWORD: WordPress
+MYSQL_DATABASE: WordPress
+MYSQL_USER: WordPress
+MYSQL_PASSWORD: WordPress
+WordPress:
+depends_on:
+- DB
+image: WordPress:latest
+ports:
+- "8000:80"
+restart: always
+environment:
+WORDPRESS_DB_HOST: db:3306
 
-networks:
-  nginx-network:
-    driver: bridge
+WORDPRESS_DB_PASSWORD: wordpress
+volumes:
+db_data:
+
 
 
 
@@ -189,3 +217,237 @@ error
 docker-compose --- segementation error then reinstall it using below command
 sudo curl -L "https://github.com/docker/compose/releases/download/$(curl -s https://api.github.com/repos/docker/compose/releases/latest | grep 'tag_name' | cut -d\" -f4)/docker-compose-$(uname -s)-$(uname -m)" -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
+
+
+
+
+
+
+
+
+
+
+
+5. Docker – USER Instruction
+-----------------------------
+in dockerfile add below things
+---------------------------------
+FROM ubuntu:latest
+RUN apt-get -y update
+RUN groupadd -r user && useradd -r -g user user
+USER user
+
+
+to se the users, exec inside the containers and run "id" commands
+
+
+6. Docker commit
+-----------------------------------------------------
+Commit with default settings
+docker commit <container_id> <new_image_name>
+
+Commit with Author Information
+docker commit -a "Author Name" <container_id> <new_image_name
+
+Commit with a commit message
+docker commit -m "Added new features" <container_id> <new_image_name>
+
+Commit with changes Applied
+docker commit --change="ENV DEBUG=true" <container_id> <new_image_name>
+
+
+
+7. Docker tag
+------------------------
+tag by using existing image
+docker tag <imageId> <imageName>/<tagName>
+
+tag by using existing nameand versionTag
+sudo docker tag <imageName:tag> <newImageName>:<tagName>
+
+Multiple tag to same image
+------------------------------------
+docker build -t gfg/gfg_app: 1 -t gfg/gfg_webapp: 1
+
+
+
+
+
+8. Dcker volumes
+-----------------------
+display all volumes
+docker volume ls
+
+create volume
+docker volume create geeksforgeeks
+
+Inspect volume
+docker volume inspect geeksforgeeks
+
+mounting - Start a Container With a Volume
+docker run -it -v geeksforgeeks:/shared-volume --name my-container-01 ubuntu
+
+same volume assign to another container
+sudo docker run -it -v geeksforgeeks:/shared-volume --name my-container-02 ubuntu
+
+Remove volume
+docker volume rm volume_name_or_id
+
+
+Use a Volume With Docker Compose
+services:
+  frontend:
+    image: node:lts
+    volumes:
+      - mongovol:/data/db
+volumes:
+  mongovol:
+
+
+Add volume to running container
+$ docker commit 5a8f89adeead newimagename
+$ docker run -ti -v "$PWD/somedir":/somedir newimagename /bin/bash
+docker run -d --name my-new-container \
+--volumes-from my-existing-container \
+-v my-new-volume:/path/to/new/volume \
+my-image
+
+
+docker stop my-existing-container
+docker rm my-existing-container
+
+
+
+
+
+
+NFS Volume
+
+
+version: '3'
+services:
+  nfs-server:
+    image: tomact:latest
+    container_name: nfs_container
+    volumes:
+      - /data:/nfs_share
+
+  nfs-client:
+    image: busybox
+    container_name: nfs_client
+    command: tail -f /dev/null
+    volumes:
+      - nfs-data:/data
+
+volumes:
+  nfs-data:
+    driver_opts:
+      type: nfs
+
+
+
+
+  9. Dcker CP
+  --------------------
+  Docker Copy Files from Host To Container
+  docker cp ~/Desktop/to-be-copied.txt 135950565ad8:/to-be-copied.txt
+
+  Host files to Docker Container using cat Command
+  docker exec -i <container name or container ID> sh -c 'cat > <Container path>' < <Host path>
+
+
+Docker Copy Files Container To Host
+docker cp 135950565ad8:/geeksforgeeks.txt ~/Desktop/geeksforgeeks.txt
+
+
+
+10. Docker Networking
+----------------------------
+Create a Bridge Network
+docker network create my_bridge_network
+
+List Docker Networks
+docker network ls
+
+Inspect a Docker Network
+docker network inspect my_bridge_network
+
+Run a Container on a Specific Network
+docker run --network my_bridge_network nginx
+
+Connect a Container to a Network
+docker network connect my_bridge_network my_container
+
+Disconnect a Container from a Network
+docker network disconnect my_bridge_network my_container
+
+
+how to connect two container and test it ?
+docker network create my_bridge_network
+docker run -d --name nginx-server --network my_bridge_network nginx
+docker run -it --name alpine-client --network my_bridge_network alpine sh
+ping nginx-server
+
+
+
+
+Static ip
+$ docker network create --subnet=10.5.0.0/16 custom_net
+
+$ docker run --detach --net custom_net --ip 10.5.0.5 -p 3306:3306 --mount source=db,target=/var/lib/mysql -e MYSQL_ROOT_PASSWORD=password mysql:latest
+$ cat docker-compose.yml
+services:
+  db:
+    container_name: mysql_db
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=password
+      - MYSQL_ROOT_HOST=10.5.0.1
+    ports:
+      - 3306:3306
+    volumes:
+      - db:/var/lib/mysql
+      - ./init.sql:/docker-entrypoint-initdb.d/init.sql
+    networks:
+      custom_net:
+        ipv4_address: 10.5.0.5
+
+volumes:
+  db:
+    driver: local
+
+networks:
+  custom_net:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 10.5.0.0/16
+          gateway: 10.5.0.1
+
+11. Private Repo
+--------------------------
+docker run -d -p 5000:5000 --name registry:2
+docker push localhost:5000/mysql:latest
+
+
+
+12. Docker Build
+---------------------------
+Multi-Stage Build
+FROM node:14-alpine as base
+
+WORKDIR /src
+COPY package.json package-lock.json /src/
+EXPOSE 3000
+
+FROM base as production
+ENV NODE_ENV=production
+RUN npm ci
+COPY . /src
+CMD ["node", "bin/www"]
+
+FROM base as dev
+ENV NODE_ENV=development
+RUN npm install -g nodemon && npm install
+COPY . /src
+CMD ["nodemon", "bin/www"]
