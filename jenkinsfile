@@ -160,3 +160,74 @@ pipeline {
     }
   }
 }
+
+
+
+
+Specific Git Branch
+-------------------------
+pipeline {
+    agent any
+
+    environment {
+        DOCKER_IMAGE = 'my_image:latest' // Define your Docker image name
+        DOCKER_REGISTRY = 'docker.io' // Docker registry (e.g., Docker Hub)
+        DOCKER_CREDENTIALS_ID = 'docker-hub-credentials' // Jenkins credentials ID
+        GIT_REPO_URL = 'https://github.com/your-repo/your-project.git' // Git repo URL
+        GIT_BRANCH = 'feature-branch' // Specify the branch to checkout
+    }
+
+    stages {
+        stage('Checkout Code') {
+            steps {
+                // Checkout the specified branch from the Git repository
+                git branch: "${GIT_BRANCH}", url: "${GIT_REPO_URL}"
+            }
+        }
+
+        stage('Build Docker Image') {
+            steps {
+                script {
+                    // Build the Docker image using the Dockerfile in the repo
+                    docker.build(DOCKER_IMAGE)
+                }
+            }
+        }
+
+        stage('Run Tests') {
+            steps {
+                script {
+                    // Optionally run tests on the Docker image
+                    docker.image(DOCKER_IMAGE).inside {
+                        sh 'run-your-tests-command' // Replace with your test command
+                    }
+                }
+            }
+        }
+
+        stage('Push Docker Image') {
+            steps {
+                script {
+                    // Login to Docker Registry and push the image
+                    docker.withRegistry(DOCKER_REGISTRY, DOCKER_CREDENTIALS_ID) {
+                        docker.image(DOCKER_IMAGE).push()
+                    }
+                }
+            }
+        }
+    }
+
+    post {
+        always {
+            // Clean up Docker images if needed
+            sh 'docker rmi ${DOCKER_IMAGE} || true'
+        }
+        success {
+            echo 'Build and push successful!'
+        }
+        failure {
+            echo 'Build failed.'
+        }
+    }
+}
+
