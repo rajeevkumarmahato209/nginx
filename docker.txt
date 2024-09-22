@@ -451,3 +451,33 @@ ENV NODE_ENV=development
 RUN npm install -g nodemon && npm install
 COPY . /src
 CMD ["nodemon", "bin/www"]
+
+
+
+13. Running Multiple Services
+----------------------------------------
+start-services.sh
+#!/bin/bash
+
+# Start MySQL
+service mysql start
+
+# Start Nginx
+nginx -g 'daemon off;'
+
+
+
+
+Dockerfile
+COPY start-services.sh /usr/local/bin/start-services.sh
+RUN chmod +x /usr/local/bin/start-services.sh
+
+CMD ["/usr/local/bin/start-services.sh"]
+
+
+
+docker build -t multi-service-app .
+docker run -d -p 80:80 -p 3306:3306 multi-service-app
+
+
+
