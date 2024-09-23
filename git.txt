@@ -1,0 +1,211 @@
+1. Git Basic Commands
+---------------------------
+git clone <repo_ur>
+git init
+git add. 
+git diff
+git status
+git commit -m “commit message”
+git remote add origin <url>
+
+
+
+2. Branching
+----------------------
+git checkout -b <branch_name>
+git push origin <branch_name>
+git checkout <branch_name>
+
+
+3. Git Log
+---------------------
+git log
+git log --pretty=oneline
+git log --pretty=format:"%h %s" --graph
+
+
+4. Git Stash
+------------------
+git stash 
+git stash pop
+
+git stash save "your message here"
+git stash list
+git stash apply
+git stash apply stash@{index}
+
+git stash drop stash@{index}
+git stash clear
+
+
+By default, git stash does not include untracked files. To stash untracked files, use:
+git stash -u
+
+
+To include ignored files as well, use
+git stash -a
+
+
+
+5. Git Amend 
+-------------------
+command allows you to modify the most recent commit
+git commit --amend -m "New commit message"
+git add <file1> <file2>
+git commit --amend
+
+
+
+6. Git Reset
+----------------
+Soft Reset 
+Moves HEAD to a specified commit but keeps changes in the staging area.
+Useful for uncommitting changes while keeping them staged for a new commit.
+git reset --soft <commit>
+
+
+Mixed Reset (default)
+Moves HEAD to a specified commit and resets the staging area but keeps changes in the working directory.
+This is the default mode if you don’t specify an option
+git reset <commit>
+
+Hard Reset (--hard)
+Moves HEAD to a specified commit, resets the staging area, and discards changes in the working directory.
+Use this with caution, as it permanently removes uncommitted changes.
+git reset --hard <commit>
+
+
+7. Git Config
+-------------------------
+System Level: Applies to all users on the system (usually requires administrative rights).
+Global Level: Applies to the current user across all repositories.
+Local Level: Applies only to the specific repository.
+
+git config --list
+git config user.name
+git config --global user.name "Your Name"
+git config --global user.email "you@example.com"
+git config --global --edit
+git config --global core.editor "nano"  # or "vim", "code --wait", etc.
+git config --global alias.st status
+
+
+8. Git TAG
+--------------------
+git tag
+git tag <tag_name>
+git tag -a <tag_name> -m "Tag message"
+git show <tag_name>
+git push origin <tag_name>
+ALL TAG
+git push origin --tags
+DELETE TAG
+git tag -d <tag_name>
+git checkout <tag_name>
+
+
+9. Git Rebse
+------------------
+To rebase your current branch onto another branch (e.g., main):
+git checkout feature-branch
+git rebase main
+
+Interactive Rebase
+git rebase -i HEAD~N
+
+
+sqash
+git rebase -i HEAD~3
+pick abc1234 Commit message 1
+pick def5678 Commit message 2
+pick ghi9012 Commit message 3
+pick abc1234 Commit message 1
+squash def5678 Commit message 2
+squash ghi9012 Commit message 3
+
+Save and Exit
+
+Squashing During Merge
+git checkout main
+git merge --squash feature-branch
+git commit -m "Combined changes from feature-branch"
+
+
+
+
+Editing Older Commits
+
+Start an Interactive Rebase
+git rebase -i HEAD~5
+Edit the Rebase Todo List
+pick abc1234 Commit message 1
+pick def5678 Commit message 2
+pick ghi9012 Commit message 3
+pick jkl3456 Commit message 4
+pick mno7890 Commit message 5
+Change pick to edit (or e) for the commit you want to modify:
+pick abc1234 Commit message 1
+edit def5678 Commit message 2
+pick ghi9012 Commit message 3
+pick jkl3456 Commit message 4
+pick mno7890 Commit message 5
+
+Save and Exit
+Make Changes to the Commit
+git add <file>
+Amend the Commit
+git commit --amend
+Continue the Rebase
+
+After amending, continue the rebase process:
+git rebase --continue
+
+
+
+
+
+
+
+
+
+
+
+
+Steps to Split a Commit
+Start an Interactive Rebase
+Decide how many commits back the commit you want to split is. For example, to edit the last commit:
+
+git rebase -i HEAD~1
+Edit the Commit
+edit abc1234 Commit message you want to split
+Save and Exit
+Reset the Commit
+Git will stop at the commit you marked for editing. To reset the commit while keeping changes in the working directory:
+git reset HEAD^
+Stage Changes for the First New Commit
+git add <file1>
+Create the First Commit
+git commit -m "First part of the split commit"
+Stage Changes for the Second New Commit
+git add <file2>  # or any other files you want to include
+Create the Second Commit
+git commit -m "Second part of the split commit"
+Continue the Rebase
+git rebase --continue
+git push --force
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
